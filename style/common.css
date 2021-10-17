@@ -1,0 +1,25 @@
+body {
+  margin: 0px !important;
+  background-color: #fff;
+}
+.github-corner {
+  position: fixed;
+  top: 0;
+  border: 0;
+  right: 0;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 0px;
+  background: #eee;
+  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.08);
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 0px;
+  background: #999;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+}

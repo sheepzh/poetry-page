@@ -1,0 +1,100 @@
+import sys
+import importlib
+import os
+import json
+import shutil
+from itertools import chain
+from pypinyin import pinyin, Style
+
+if(len(sys.argv) == 1):
+    print('no origin data folder')
+    exit()
+
+importlib.reload(sys)
+
+origin_dir = sys.argv[1]
+target_dir = os.path.join('json')
+
+if not os.path.exists(target_dir):
+    os.makedirs(target_dir)
+
+
+def dumps(file_path, obj):
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(json.dumps(obj, separators=(',', ':'), ensure_ascii=False, indent=4))
+
+
+def parse_poem(poem_path, target_dir, word_set):
+    with open(poem_path, 'r', encoding='utf-8')as file:
+        lines = list(map(lambda s: s.strip(), file.readlines()))
+        title = lines[0][6:]
+        date = lines[1][5:]
+    poem = []
+    poem.append(date)
+    word_count = 0
+    for line in lines[3:]:
+        line = line.strip()
+        poem.append(line)
+        word_count += len(line)
+        for word in line:
+            if word != ' ':
+                word_set.add(word)
+    dumps(os.path.join(target_dir, '{}.json'.format(title)), poem)
+    return (title, word_count)
+
+
+def to_pinyin(s):
+    return ''.join(chain.from_iterable(pinyin(s, style=Style.TONE3)))
+
+
+def parse_poet(dir_name, root):
+    split = dir_name.rindex('_')
+    poet = {'n': dir_name[:split], 'p': dir_name[split + 1:], 'c': 0, 'w': 0, 'dw': 0}
+    poet_dir = os.path.join(target_dir, poet['n'])
+    if not os.path.exists(poet_dir):
+        os.makedirs(poet_dir)
+    work_list = []
+    word_set = set()
+    for root, _, fs in os.walk(os.path.join(root, dir_name)):
+        for f in fs:
+            if f.endswith('.pt'):
+                (title, word_count) = parse_poem(os.path.join(root, f), poet_dir, word_set)
+                work_list.append(title)
+                poet['c'] += 1
+                poet['w'] += word_count
+    work_list = sorted(work_list, key=to_pinyin)
+    poet['dw'] = len(word_set)
+    dumps(os.path.join(poet_dir, 'meta.json'), work_list)
+    return poet
+
+
+if not os.path.exists(target_dir):
+    os.makedirs(target_dir)
+
+# Delete previous data
+for f in os.listdir(target_dir):
+    file_path = os.path.join(target_dir, f)
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+    else:
+        shutil.rmtree(file_path, ignore_errors=True)
+
+poet_list = []
+
+for root, ds, _ in os.walk(origin_dir):
+    for d in ds:
+        poet = parse_poet(d, root)
+        if poet:
+            poet_list.append(poet)
+
+poet_list = sorted(poet_list, key=lambda poet: poet['p'])
+
+dumps(os.path.join(target_dir, 'list.json'), poet_list)
+
+author_count = len(poet_list)
+poem_count = sum(map(lambda p: p['c'], poet_list))
+word_count = sum(map(lambda p: p['w'], poet_list))
+
+import time
+now_ts = int(time.time() * 1000)
+dumps(os.path.join(target_dir, 'meta.json'), {'ac': author_count, 'pc': poem_count, 'wc': word_count, 'ts': now_ts})
