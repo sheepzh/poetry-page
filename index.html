@@ -20,14 +20,15 @@
           </p>
         </div>
       </div>
-      <div class="split-line"></div>
-      <div id="poet-card-container"></div>
-      <div style="width: 100%; margin-bottom: 40px; text-align: center">
+      <div id="poet-card-container">
+        <table id="table-container" class="card-table">
+        </table>
+      </div>
+      <div style="display: none;">
         <img
           src="https://visitor-badge.laobi.icu/badge?page_id=github_sheepzh_poetry"
           style="padding-right: 10px"
         />
-        <img src="https://img.shields.io/badge/%E2%9D%A4-ZHY-red" />
       </div>
     </div>
     <a
@@ -64,7 +65,7 @@
       font-family: Times New Roman;
       display: flex;
       height: 9vw;
-      min-height: 180px;
+      min-height: 160px;
       flex-wrap: nowrap;
       align-items: center;
       justify-content: space-around;
@@ -76,7 +77,6 @@
       color: #444;
     }
     #poet-card-container {
-      margin-top: 40px;
       margin-bottom: 40px;
       height: 100%;
       width: auto;
@@ -94,39 +94,41 @@
       color: #222;
       border-collapse: collapse;
     }
-    .card-link {
+    #content-td {
       display: flex;
       border-top: 1px solid #999;
       flex-direction: row;
       flex-wrap: wrap;
       justify-content: space-between;
     }
-    .card-link::after {
-      content: '';
-      flex: auto;
-    }
-    .card-link > a {
+    .card-link {
       display: flex;
       text-decoration: none;
       color: #606266;
-      padding: 20px;
+      padding: 19px;
       font-family: 'Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif';
     }
-    .card-link > a:hover {
+    .card-link:last-child {
+      margin-right: auto;
+    }
+    .card-link:hover {
       color: #409eff;
       text-decoration: underline;
     }
     .card-label {
-      padding-left: 40px;
+      padding: 0 40px;
       height: 40px;
       line-height: 40px;
       font-size: 20px;
+      display: flex;
+      justify-content: space-between;
     }
-    .split-line {
-      position: relative;
-      overflow: hidden;
-      height: 1px;
-      background-color: #999;
+    .letter-label:not(.active) {
+      cursor: pointer;
+    }
+    .letter-label.active{
+      color: #409eff;
+      cursor: none;
     }
   </style>
 </html>
