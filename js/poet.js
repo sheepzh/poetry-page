@@ -6,12 +6,13 @@ for (const query of queryStr.split('&')) {
         param[result[0]] = result[1]
     }
 }
-const poetName = param['name']
 
+const poetName = param['name']
 // Redirect to the home page if no poet name
 if (!poetName) window.location.pathname = '/'
-
-const poemName = param['poem']
+let pageNum = param['page'] || 1
+let poemName = param['poem']
+let totalPage = 0
 
 // Init the title
 document.title = `${poetName} - 汉语现诗语料库`
@@ -19,24 +20,9 @@ document.title = `${poetName} - 汉语现诗语料库`
 const selectedClzName = 'selected-poem'
 
 const menu = document.getElementById('menu')
-function renderTitle(list) {
-    const poetLabel = `${poetName} ${(list && list.length) || 0} 首`
+function renderTitle(meta) {
+    const poetLabel = `${poetName} ${meta?.t || 0} 首`
     document.getElementById('poet-name-label').innerHTML = poetLabel
-    const targetPoem = poemName || list[0]
-    for (poem of list) {
-        const span = document.createElement('span')
-        span.innerHTML = poem
-
-        const p = document.createElement('p')
-        p.classList.add('title-item')
-        p.append(span)
-        menu.appendChild(p)
-
-        if (targetPoem === poem) {
-            p.classList.add(selectedClzName)
-            getJson(`/${poetName}/${targetPoem}.json`, content => renderContent(content, targetPoem))
-        }
-    }
 }
 
 function clearContent(content) {
@@ -50,7 +36,7 @@ function appendBr(container, count) {
         container.append(document.createElement('br'))
     }
 }
-function renderContent(lines, title) {
+function renderContent(lines, title, date) {
     const content = document.getElementById('content')
     clearContent(content)
     const lineContainer = document.createElement('div')
@@ -63,10 +49,8 @@ function renderContent(lines, title) {
     lineContainer.append(titleP)
     appendBr(lineContainer, 2)
 
-    const l = lines || []
-    date = l[0]
-    for (let i = 1; i < l.length; i++) {
-        const line = l[i]
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
         if (!line) {
             lineContainer.append(document.createElement('br'))
             continue
@@ -87,7 +71,7 @@ function renderContent(lines, title) {
     content.append(lineContainer)
 
     // Set the query make it easy to share
-    history.pushState({}, '', `?name=${poetName}&poem=${title}`)
+    history.pushState({}, '', `?name=${poetName}&poem=${title}&page=${pageNum}`)
     // Update the title
     document.title = `${title}/${poetName} - 汉语现诗语料库`
 }
@@ -103,13 +87,44 @@ function clickMenu(event) {
         selected.classList.remove(selectedClzName)
     }
     p.classList.add(selectedClzName)
-    getJson(`/${poetName}/${p.innerText}.json`, content => renderContent(content, p.innerText))
+    const title = p.innerText
+    const item = currentData[title]
+    const lines = item.content.split('\n')
+    const date = item.date
+    renderContent(lines, title)
+}
+
+let currentData = {}
+
+function changePage(newPage) {
+    if (!newPage || newPage < 0 || newPage > totalPage) {
+        return
+    }
+    pageNum = newPage
+    Array.from(menu.children).forEach(element => element.remove())
+    currentData = {}
+    getJson(`/${poetName}/${pageNum}.json`, list => {
+        for (let item of list) {
+            currentData[item.title] = item
+
+            const p = document.createElement('p')
+            const span = document.createElement('span')
+            span.innerHTML = item.title
+            p.append(span)
+            p.classList.add('title-item')
+            menu.append(p)
+        }
+    })
 }
 
 document.body.onload = () =>
     getJson(
         `/${poetName}/meta.json`,
-        renderTitle,
+        (meta) => {
+            renderTitle(meta)
+            totalPage = meta.p
+            changePage(pageNum)
+        },
         // if error, redirect the home page, mostly is 404
         () => (window.location.pathname = '/')
     )
