@@ -11,10 +11,17 @@
   <body>
     <div class="container">
       <div class="side">
-        <p id="poet-label">
+        <div id="poet-label">
           <a id="return-button" href="./">RETURN</a>
-          <a id="poet-name-label" style="float: right"></a>
-        </p>
+          <a id="poet-name-label"></a>
+          <div id="pagination">
+            <a id="prev-page" class="page-button disabled" onclick="previousPage()">&lt;</a>
+            <a id="current-page">0</a>
+            <a>/</a>
+            <a id="total-page">0</a>
+            <a id="next-page" class="page-button disabled" onclick="nextPage()">&gt;</a>
+          </div>
+        </div>
         <div id="menu" onclick="clickMenu(event)"></div>
       </div>
       <div id="content"></div>
@@ -80,6 +87,9 @@
       line-height: 40px;
       user-select: none;
     }
+    #menu > .title-item {
+      line-height: 30px;
+    }
     .title-item:hover {
       cursor: pointer;
       background-color: #eee;
@@ -88,7 +98,7 @@
       background-color: #ddd;
     }
     #return-button {
-      display: inline-block;
+      display: inline-flex;
       line-height: 1;
       min-height: 40px;
       white-space: nowrap;
@@ -106,14 +116,29 @@
       padding: 12px 20px;
       font-size: 14px;
     }
+    #pagination {
+      font-size: 14px;
+      color: #606266;
+    }
+    .page-button {
+      padding: 2px 5px;
+      cursor: pointer;
+      color: #409eff;
+    }
+    .page-button.disabled {
+      cursor: not-allowed;
+      color: #606266 !important;
+    }
     #poet-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
       height: 40px;
       top: 0;
       left: 0;
       margin-top: 0 !important;
-      border-bottom-width: 1px;
-      border-bottom-color: #999;
-      border-bottom-style: solid;
+      border-bottom: #999 1px solid;
     }
     #content {
       padding-top: 40px;
