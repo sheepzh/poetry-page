@@ -10,7 +10,8 @@ for (const query of queryStr.split('&')) {
 const poetName = param['name']
 // Redirect to the home page if no poet name
 if (!poetName) window.location.pathname = '/'
-let pageNum = param['page'] || 1
+const pageStr = param['page']
+let pageNum = Number.parseInt(pageStr) || 1
 let poemName = param['poem']
 let totalPage = 0
 
@@ -91,21 +92,23 @@ function clickMenu(event) {
     const item = currentData[title]
     const lines = item.content.split('\n')
     const date = item.date
-    renderContent(lines, title)
+    renderContent(lines, title, date)
 }
 
 let currentData = {}
-
-function changePage(newPage) {
+function changePage(newPage, targetPoemTitle) {
     if (!newPage || newPage < 0 || newPage > totalPage) {
         return
     }
     pageNum = newPage
+    document.getElementById('current-page').innerText = pageNum
     Array.from(menu.children).forEach(element => element.remove())
     currentData = {}
+    let poemToClick = undefined
     getJson(`/${poetName}/${pageNum}.json`, list => {
         for (let item of list) {
-            currentData[item.title] = item
+            const title = item.title
+            currentData[title] = item
 
             const p = document.createElement('p')
             const span = document.createElement('span')
@@ -113,17 +116,36 @@ function changePage(newPage) {
             p.append(span)
             p.classList.add('title-item')
             menu.append(p)
+            // 初始化打开第一条
+            poemToClick = poemToClick || p
+            // 如果指定了则打开指定的
+            title === targetPoemTitle && (poemToClick = p)
         }
+        poemToClick?.click?.()
     })
+    pageNum === 1 ? prevPageBtn.classList.add("disabled") : prevPageBtn.classList.remove("disabled")
+    pageNum === totalPage ? nextPageBtn.classList.add("disabled") : nextPageBtn.classList.remove("disabled")
 }
+
+function nextPage() {
+    changePage(pageNum + 1)
+}
+
+function previousPage() {
+    changePage(pageNum - 1)
+}
+
+const prevPageBtn = document.getElementById('prev-page')
+const nextPageBtn = document.getElementById('next-page')
 
 document.body.onload = () =>
     getJson(
         `/${poetName}/meta.json`,
         (meta) => {
             renderTitle(meta)
-            totalPage = meta.p
-            changePage(pageNum)
+            totalPage = meta.p || 0
+            document.getElementById('total-page').innerText = totalPage
+            changePage(pageNum, poemName)
         },
         // if error, redirect the home page, mostly is 404
         () => (window.location.pathname = '/')
