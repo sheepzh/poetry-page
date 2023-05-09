@@ -53,6 +53,8 @@ def to_pinyin(s):
 
 
 def parse_poet(dir_name, root):
+    if root != sys.argv[1]:
+        return None  # Avoid RuntimeError thrown by subfolders without '_'
     split = dir_name.rindex('_')
     poet = {'n': dir_name[:split],
             'p': dir_name[split + 1:], 'c': 0, 'w': 0, 'dw': 0}
